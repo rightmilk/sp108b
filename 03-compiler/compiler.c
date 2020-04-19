@@ -5,6 +5,7 @@ int E();
 void STMT();
 void IF();
 void BLOCK();
+void WHILE();
 
 int tempIdx = 0, labelIdx = 0;
 
@@ -93,7 +94,7 @@ void IF() {
   emit("(L%d)\n", ifEnd);
 }
 
-// while (E) STMT
+// WHILE = while (E) STMT
 void WHILE() {
   int whileBegin = nextLabel();
   int whileEnd = nextLabel();
@@ -108,30 +109,33 @@ void WHILE() {
   emit("(L%d)\n", whileEnd);
 }
 
+// STMT = IF | WHILE | BLOCK | ASSIGN
 void STMT() {
   if (isNext("while"))
-    return WHILE();
-  // else if (isNext("if"))
-  //   IF();
+    WHILE();
+  else if (isNext("if"))
+    IF();
   else if (isNext("{"))
     BLOCK();
   else
     ASSIGN();
 }
 
+// STMTS = STMT*
 void STMTS() {
   while (!isEnd() && !isNext("}")) {
     STMT();
   }
 }
 
-// { STMT* }
+// BLOCK = { STMTS }
 void BLOCK() {
   skip("{");
   STMTS();
   skip("}");
 }
 
+// PROG = STMTS
 void PROG() {
   STMTS();
 }
