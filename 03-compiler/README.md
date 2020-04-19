@@ -56,21 +56,21 @@ goto L0
 
 參考語法
 
-ˋˋˋ
+```
 IF = if (E) STMT (else STMT)?
 STMT = IF | WHILE | BLOCK | ASSIGN
-ˋˋˋ
+```
 
 測試範例
 
-ˋˋˋ
+```
 a = 3;
 b = 5;
 if (a > b)
     t = a;
 else
    t = b;
-ˋˋˋ
+```
 
 執行結果
-ˋˋˋ
+```
