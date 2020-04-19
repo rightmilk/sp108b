@@ -53,3 +53,24 @@ goto L0
 (L1)
 ```
 加入if
+
+參考語法
+
+```
+IF = if (E) STMT (else STMT)?
+STMT = IF | WHILE | BLOCK | ASSIGN
+```
+
+測試範例
+
+```
+a = 3;
+b = 5;
+if (a > b)
+    t = a;
+else
+   t = b;
+```
+
+執行結果
+```
