@@ -24,7 +24,6 @@ int isEnd() {
 }
 
 char *next() {
-  // printf("token[%d]=%s\n", tokenIdx, tokens[tokenIdx]);
   return tokens[tokenIdx++];
 }
 
@@ -40,11 +39,11 @@ char *skip(char *set) {
 // F = (E) | Number | Id
 int F() {
   int f;
-  if (isNext("(")) { // '(' E ')'
-    next(); // (
+  if (isNext("(")) { 
+    next(); 
     f = E();
-    next(); // )
-  } else { // Number | Id
+    next(); 
+  } else {
     f = nextTemp();
     char *item = next();
     emit("t%d = %s\n", f, item);
@@ -76,31 +75,30 @@ void ASSIGN() {
 
 // WHILE = while (E) STMT
 void WHILE() {
-  int whileBegin = nextLabel();//產生標記使用nextLabel()
+  int whileBegin = nextLabel();
   int whileEnd = nextLabel();
   emit("(L%d)\n", whileBegin);
   skip("while");
   skip("(");
   int e = E();
-  emit("if not T%d goto L%d\n", e, whileEnd);//產生中間碼
+  emit("if not T%d goto L%d\n", e, whileEnd);
   skip(")");
   STMT();
-  emit("goto L%d\n", whileBegin);//產生goto
+  emit("goto L%d\n", whileBegin);
   emit("(L%d)\n", whileEnd);
 }
 
 // IF = if (E) STMT ( else STMT)?
 void IF() {
-  int elseBegin = nextLabel();//產生標記使用nextLabel()
+  int elseBegin = nextLabel();
   int End = nextLabel();
-  //emit("(L%d)\n", whileBegin);
   skip("if");
   skip("(");
   int e = E();
-  emit("if not t%d goto L%d\n", e, elseBegin);//產生中間碼
+  emit("if not t%d goto L%d\n", e, elseBegin);
   skip(")");
   STMT();
-  emit("goto L%d\n", End);//產生goto
+  emit("goto L%d\n", End);
   emit("(L%d)\n", elseBegin);
   if(isNext("else")){
     skip("else");
