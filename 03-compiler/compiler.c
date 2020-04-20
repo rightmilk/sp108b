@@ -5,7 +5,6 @@ int E();
 void STMT();
 void IF();
 void BLOCK();
-void WHILE();
 
 int tempIdx = 0, labelIdx = 0;
 
@@ -75,44 +74,45 @@ void ASSIGN() {
   emit("%s = t%d\n", id, e);
 }
 
-//IF = if (E) STMT (else if (E) STMT else STMT)?
-void IF() {
-  int ifBegin = nextLabel();
-  int ifEnd = nextLabel();
-  skip("if");
-  skip("(");
-  int e = E();
-  emit("if t%d isn't True goto L%d\n", e, ifBegin);
-  skip(")");
-  STMT();
-  emit("goto L%d\n", ifEnd);
-  emit("(L%d)\n", ifBegin);
-  if (isNext("else")) {
-    skip("else");
-    STMT();
-  }
-  emit("(L%d)\n", ifEnd);
-}
-
 // WHILE = while (E) STMT
 void WHILE() {
-  int whileBegin = nextLabel();
+  int whileBegin = nextLabel();//產生標記使用nextLabel()
   int whileEnd = nextLabel();
   emit("(L%d)\n", whileBegin);
   skip("while");
   skip("(");
   int e = E();
-  emit("if not T%d goto L%d\n", e, whileEnd);
+  emit("if not T%d goto L%d\n", e, whileEnd);//產生中間碼
   skip(")");
   STMT();
-  emit("goto L%d\n", whileBegin);
+  emit("goto L%d\n", whileBegin);//產生goto
   emit("(L%d)\n", whileEnd);
 }
 
-// STMT = IF | WHILE | BLOCK | ASSIGN
+// IF = if (E) STMT ( else STMT)?
+void IF() {
+  int elseBegin = nextLabel();//產生標記使用nextLabel()
+  int End = nextLabel();
+  //emit("(L%d)\n", whileBegin);
+  skip("if");
+  skip("(");
+  int e = E();
+  emit("if not t%d goto L%d\n", e, elseBegin);//產生中間碼
+  skip(")");
+  STMT();
+  emit("goto L%d\n", End);//產生goto
+  emit("(L%d)\n", elseBegin);
+  if(isNext("else")){
+    skip("else");
+    STMT();
+  }
+  emit("(L%d)\n", End);
+}
+
+// STMT = WHILE | BLOCK | ASSIGN
 void STMT() {
   if (isNext("while"))
-    WHILE();
+    return WHILE();
   else if (isNext("if"))
     IF();
   else if (isNext("{"))
