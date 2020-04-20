@@ -4,5 +4,5 @@ if (a > b){
     t=a;
 }
 else{
-    t=b;
+     t=b;
 }
