@@ -6,4 +6,11 @@
 
 extern void parse();
 
+#define GOTOLABEL_MAX 10000
+
+typedef struct {
+  int index;
+  char *label;
+} GOTOLABEL;
+
 #endif
