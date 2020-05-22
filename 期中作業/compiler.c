@@ -3,19 +3,37 @@
 
 int  E();
 void STMT();
-void IF();
 void BLOCK();
 
-int tempIdx = 1, labelIdx = 1;
+int tempIdx = 1, labelIdx = 1, gotolabelIdx = 1;
+GOTOLABEL gotoLabel[GOTOLABEL_MAX]; // 存放goto標籤
 
 #define nextTemp() (tempIdx++)
 #define nextLabel() (labelIdx++)
+
+int findGotoLabel(char *label) { // 尋找goto標籤
+  for(int i=1; i<gotolabelIdx; i++ )
+  {
+    if(strcmp(gotoLabel[i].label, label) == 0)
+    {
+      return gotoLabel[i].index;
+    }
+  }
+  return -1;
+}
 
 int isNext(char *set) {
   char eset[SMAX], etoken[SMAX];
   sprintf(eset, " %s ", set);
   sprintf(etoken, " %s ", tokens[tokenIdx]);
   return (tokenIdx < tokenTop && strstr(eset, etoken) != NULL);
+}
+
+int isNext2(char *set) { //尋找接下來出現的第二個字
+  char eset[SMAX], etoken[SMAX];
+  sprintf(eset, " %s ", set);
+  sprintf(etoken, " %s ", tokens[tokenIdx+1]);
+  return (tokenIdx+1 < tokenTop && strstr(eset, etoken) != NULL);
 }
 
 int isNextType(TokenType type) {
@@ -126,11 +144,86 @@ void WHILE() {
   // emit("(L%d)\n", whileEnd);
 }
 
+// IF = if (E) STMT (else STMT)?
+void IF() {
+  int ifEnd = nextLabel();
+  int elseEnd = nextLabel();
+  skip("if");
+  skip("(");
+  int e = E();
+  irEmitIfNotGoto(e, ifEnd);
+  // emit("if not T%d goto L%d\n", e, ifEnd);
+  skip(")");
+  STMT();
+  irEmitGoto(elseEnd);
+  // emit("goto L%d\n", elseEnd);
+  irEmitLabel(ifEnd);
+  // emit("(L%d)\n", ifEnd);
+  if (isNext("else")) {
+    skip("else");
+    STMT();
+  }
+  irEmitLabel(elseEnd);
+  // emit("(L%d)\n", elseEnd);
+}
+
+void FOR() {
+  int forBegin = nextLabel();
+  int forEnd = nextLabel();
+  skip("for");
+  skip("(");
+  STMT();
+  irEmitLabel(forBegin);
+  int e = E();
+  irEmitIfNotGoto(e, forEnd);
+  skip(";");
+  char *id = next();
+  ASSIGN(id);
+  skip(")");
+  STMT();
+  irEmitGoto(forBegin);
+  irEmitLabel(forEnd);
+}
+
+int newGotoLabel(char *label) { // 建立新標籤
+  int index = nextLabel();
+  gotoLabel[gotolabelIdx].index = index;
+  gotoLabel[gotolabelIdx].label = label;
+  gotolabelIdx++;
+  return index;
+}
+
+void GOTO() { // 跳到標籤位置
+  skip("goto");
+  char *label=next();
+  
+  int index = findGotoLabel(label);
+  if (index == -1)
+    index = newGotoLabel(label);
+  irEmitGoto(index);
+  skip(";");
+}
+
+void GotoLabel() { // 擺放跳躍標籤
+  char *label=next();
+  int index = findGotoLabel(label);
+  if (index == -1)
+    index = newGotoLabel(label);
+  irEmitLabel(index);
+  skip(":");
+}
+
 void STMT() {
   if (isNext("while"))
     WHILE();
-  // else if (isNext("if"))
-  //   IF();
+  else if (isNext("if"))
+    IF();
+  else if (isNext("for"))
+    FOR();
+  else if (isNext("goto"))
+    GOTO();
+  else if (isNext2(":")) // 暫時不考慮switch case
+    GotoLabel();
   else if (isNext("{"))
     BLOCK();
   else {
