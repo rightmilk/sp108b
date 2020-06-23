@@ -107,6 +107,24 @@ void ASSIGN(char *id) {
   // emit("%s = t%d\n", id, e);
 }
 
+void IF() {
+  int ifBegin = nextLabel();
+  int ifEnd = nextLabel();
+  skip("if");
+  skip("(");
+  int e = E();
+  irEmitIfNotGoto(e, ifBegin);
+  skip(")");
+  STMT();
+  irEmitGoto(ifEnd);
+  irEmitLabel(ifBegin);
+  if (isNext("else")) {
+    skip("else");
+    STMT();
+  }
+  irEmitLabel(ifEnd);
+}
+
 // while (E) STMT
 void WHILE() {
   int whileBegin = nextLabel();
@@ -129,8 +147,8 @@ void WHILE() {
 void STMT() {
   if (isNext("while"))
     WHILE();
-  // else if (isNext("if"))
-  //   IF();
+  else if (isNext("if"))
+     IF();
   else if (isNext("{"))
     BLOCK();
   else {

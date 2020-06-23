@@ -54,7 +54,7 @@ void irPrint(IR *p) {
     case IrLabel: printf("(L%d)", p->label); break;
     case IrGoto: printf("goto L%d", p->label); break;
     case IrIfGoto: printf("if t%d goto L%d", p->t, p->label); break;
-    case IrIfNotGoto: printf("ifnot t%d goto L%d", p->t, p->label); break;
+    case IrIfNotGoto: printf("if not t%d goto L%d", p->t, p->label); break;
     case IrOp2: printf("t%d = t%d %s t%d", p->t, p->t1, p->op, p->t2); break;
     default: error("ir.type %d not found!", p->type);
   }
